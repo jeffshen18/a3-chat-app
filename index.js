@@ -106,8 +106,6 @@ function removeElement(array, elem) {
     }
 }
 
-const PORT = 3000 || process.env.PORT;
-
-server.listen(3000, () => {
-    console.log('listening on *:3000');
-});
+server.listen(process.env.PORT || 4000, process.env.IP, function() {
+    console.log("Chat app server has started on port 4000");
+})
