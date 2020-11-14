@@ -4,26 +4,22 @@ const chatMessages = document.querySelector('.messages');
 const socket = io();
 
 socket.on('connect', () => { 
-    if (document.cookie !== '') {
+    if (document.cookie.split(';').some((item) => item.trim().startsWith('username='))) {
         const cookieValue = document.cookie
-        const localValue = localStorage.getItem('sessionId')
-
-        if (localValue === cookieValue) {
-            socket.username = localStorage.getItem('sessionUsername')
-        } else {
-            localStorage.setItem('sessionId', cookieValue);
-            localStorage.setItem('sessionUsername', socket.id);
-            socket.username = localStorage.getItem('sessionUsername');
-        }
-    } else {
+            .split('; ')
+            .find(row => row.startsWith('username'))
+            .split('=')[1];
+        socket.username = cookieValue;
+    }
+    else {
         socket.username = socket.id
+        document.cookie = "username=" + socket.id
     }
     socket.emit('set up', socket.username)
  });
 
 socket.on('change username', message => {
-    localStorage.removeItem('sessionUsername');
-    localStorage.setItem('sessionUsername', message);
+    document.cookie = "username=" + message;
 })
 
 socket.on('identify', message => {
