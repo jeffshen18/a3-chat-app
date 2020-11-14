@@ -15,6 +15,158 @@ const map = {
     ":(" : "&#128577;",
     ":o" : "&#x1F632;"
 }
+let CSS_COLOR_NAMES = [
+    "AliceBlue",
+    "AntiqueWhite",
+    "Aqua",
+    "Aquamarine",
+    "Azure",
+    "Beige",
+    "Bisque",
+    "Black",
+    "BlanchedAlmond",
+    "Blue",
+    "BlueViolet",
+    "Brown",
+    "BurlyWood",
+    "CadetBlue",
+    "Chartreuse",
+    "Chocolate",
+    "Coral",
+    "CornflowerBlue",
+    "Cornsilk",
+    "Crimson",
+    "Cyan",
+    "DarkBlue",
+    "DarkCyan",
+    "DarkGoldenRod",
+    "DarkGray",
+    "DarkGrey",
+    "DarkGreen",
+    "DarkKhaki",
+    "DarkMagenta",
+    "DarkOliveGreen",
+    "DarkOrange",
+    "DarkOrchid",
+    "DarkRed",
+    "DarkSalmon",
+    "DarkSeaGreen",
+    "DarkSlateBlue",
+    "DarkSlateGray",
+    "DarkSlateGrey",
+    "DarkTurquoise",
+    "DarkViolet",
+    "DeepPink",
+    "DeepSkyBlue",
+    "DimGray",
+    "DimGrey",
+    "DodgerBlue",
+    "FireBrick",
+    "FloralWhite",
+    "ForestGreen",
+    "Fuchsia",
+    "Gainsboro",
+    "GhostWhite",
+    "Gold",
+    "GoldenRod",
+    "Gray",
+    "Grey",
+    "Green",
+    "GreenYellow",
+    "HoneyDew",
+    "HotPink",
+    "IndianRed",
+    "Indigo",
+    "Ivory",
+    "Khaki",
+    "Lavender",
+    "LavenderBlush",
+    "LawnGreen",
+    "LemonChiffon",
+    "LightBlue",
+    "LightCoral",
+    "LightCyan",
+    "LightGoldenRodYellow",
+    "LightGray",
+    "LightGrey",
+    "LightGreen",
+    "LightPink",
+    "LightSalmon",
+    "LightSeaGreen",
+    "LightSkyBlue",
+    "LightSlateGray",
+    "LightSlateGrey",
+    "LightSteelBlue",
+    "LightYellow",
+    "Lime",
+    "LimeGreen",
+    "Linen",
+    "Magenta",
+    "Maroon",
+    "MediumAquaMarine",
+    "MediumBlue",
+    "MediumOrchid",
+    "MediumPurple",
+    "MediumSeaGreen",
+    "MediumSlateBlue",
+    "MediumSpringGreen",
+    "MediumTurquoise",
+    "MediumVioletRed",
+    "MidnightBlue",
+    "MintCream",
+    "MistyRose",
+    "Moccasin",
+    "NavajoWhite",
+    "Navy",
+    "OldLace",
+    "Olive",
+    "OliveDrab",
+    "Orange",
+    "OrangeRed",
+    "Orchid",
+    "PaleGoldenRod",
+    "PaleGreen",
+    "PaleTurquoise",
+    "PaleVioletRed",
+    "PapayaWhip",
+    "PeachPuff",
+    "Peru",
+    "Pink",
+    "Plum",
+    "PowderBlue",
+    "Purple",
+    "RebeccaPurple",
+    "Red",
+    "RosyBrown",
+    "RoyalBlue",
+    "SaddleBrown",
+    "Salmon",
+    "SandyBrown",
+    "SeaGreen",
+    "SeaShell",
+    "Sienna",
+    "Silver",
+    "SkyBlue",
+    "SlateBlue",
+    "SlateGray",
+    "SlateGrey",
+    "Snow",
+    "SpringGreen",
+    "SteelBlue",
+    "Tan",
+    "Teal",
+    "Thistle",
+    "Tomato",
+    "Turquoise",
+    "Violet",
+    "Wheat",
+    "White",
+    "WhiteSmoke",
+    "Yellow",
+    "YellowGreen",
+  ];
+
+LOWER_CSS_COLOR_NAMES = CSS_COLOR_NAMES.map(v => v.toLowerCase());
 
 io.on('connection', socket => {
     // set up chat app
@@ -53,14 +205,26 @@ io.on('connection', socket => {
             }
         } else if (msg.startsWith("/color")) {
             const input = msg.split(' ');
-            socket.color = input[1];
-            chatMessages.map(message => {
-                if (message.username === socket.username) {
-                    message.color = input[1];
-                }
-            })
-            socket.emit('remove messages')
-            socket.emit('show messages', chatMessages);
+            if (LOWER_CSS_COLOR_NAMES.includes(input[1].toLowerCase())) {
+                socket.color = input[1];
+                chatMessages.map(message => {
+                    if (message.username === socket.username) {
+                        message.color = input[1];
+                    }
+                })
+                socket.emit('remove messages')
+                socket.emit('show messages', chatMessages);
+            } else {
+                socket.emit('remove messages')
+                socket.emit('show messages', chatMessages);
+            }
+        } else if (msg.startsWith("/")) {
+            const formattedMessage = formatMessage("ChatBot", socket.color, "Invalid Shift Command.");
+            if (chatMessages.length > 200) {
+                chatMessages.shift();
+            } 
+            chatMessages.push(formattedMessage);
+            socket.emit('bolded message', formattedMessage)
         } else {
             for (let key in map) {
                 const regex = new RegExp(escapeSpecialChars(key), 'gi');
